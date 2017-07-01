@@ -19,6 +19,12 @@ ifeq ($(BR2_PACKAGE_BLUEZ_UTILS),y)
 OPENOBEX_DEPENDENCIES += bluez_utils
 endif
 
+define OPENOBEX_EXTRACT_CMDS
+	$(UNZIP) -d $(@D) $(OPENOBEX_DL_DIR)/$(OPENOBEX_SOURCE)
+	mv $(@D)/openobex-$(OPENOBEX_VERSION)-Source/* $(@D)
+	$(RM) -r $(@D)/openobex-$(OPENOBEX_VERSION)-Source
+endef
+
 ifeq ($(BR2_PACKAGE_BLUEZ5_UTILS),y)
 OPENOBEX_DEPENDENCIES += bluez5_utils
 endif

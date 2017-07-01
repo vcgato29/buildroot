@@ -11,7 +11,9 @@ BOOTSTRAP_LICENSE = MIT
 BOOTSTRAP_LICENSE_FILES = css/bootstrap.css
 
 define BOOTSTRAP_EXTRACT_CMDS
-	$(UNZIP) $(DL_DIR)/$(BOOTSTRAP_SOURCE) -d $(@D)
+	$(UNZIP) $(BOOTSTRAP_DL_DIR)/$(BOOTSTRAP_SOURCE) -d $(@D)
+	mv $(@D)/bootstrap-$(BOOTSTRAP_VERSION)-dist/* $(@D)/
+	rmdir $(@D)/bootstrap-$(BOOTSTRAP_VERSION)-dist
 endef
 
 define BOOTSTRAP_INSTALL_TARGET_CMDS
