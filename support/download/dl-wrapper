@@ -50,6 +50,7 @@ main() {
     if [ -z "${output}" ]; then
         error "no output specified, use -o\n"
     fi
+    mkdir -p "$(dirname "${output}")"
 
     # If the output file already exists and:
     # - there's no .hash file: do not download it again and exit promptly
