@@ -3,7 +3,7 @@
 # We want to catch any unexpected failure, and exit immediately
 set -e
 
-# Download helper for cp, to be called from the download wrapper script
+# Download helper for file, to be called from the download wrapper script
 #
 # Options:
 #   -q          Be quiet.
@@ -23,7 +23,7 @@ while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     case "${OPT}" in
     q)  verbose=;;
     o)  output="${OPTARG}";;
-    u)  source="${OPTARG}";;
+    u)  source="${OPTARG#*://}";;
     :)  printf "option '%s' expects a mandatory argument\n" "${OPTARG}"; exit 1;;
     \?) printf "unknown option '%s'\n" "${OPTARG}" >&2; exit 1;;
     esac
