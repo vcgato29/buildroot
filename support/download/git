@@ -39,28 +39,34 @@ _git() {
     eval ${GIT} "${@}"
 }
 
-# Try a shallow clone, since it is faster than a full clone - but that only
-# works if the version is a ref (tag or branch). Before trying to do a shallow
-# clone we check if ${cset} is in the list provided by git ls-remote. If not
-# we fall back on a full clone.
-#
-# Messages for the type of clone used are provided to ease debugging in case of
-# problems
-git_done=0
-if [ -n "$(_git ls-remote "'${uri}'" "'${cset}'" 2>&1)" ]; then
-    printf "Doing shallow clone\n"
-    if _git clone ${verbose} "${@}" --depth 1 -b "'${cset}'" "'${uri}'" "'${basename}'"; then
-        git_done=1
-    else
-        printf "Shallow clone failed, falling back to doing a full clone\n"
+# We want to check if a cache of the git clone of this repo already exists.
+git_cache="${BR2_DL_DIR}/${basename%%-*}/git"
+
+# If the cache directory already exists, don't try to clone.
+if [ ! -d "${git_cache}" ]; then
+    # Try a shallow clone, since it is faster than a full clone - but that
+    # only works if the versionis a ref (tag or branch). Before trying to do a
+    # shallow clone we check if ${cset} is in the list provided by git
+    # ls-remote. If not we fall back on a full clone.
+    #
+    # Messages for the type of clone used are provided to ease debugging in
+    # case of problems
+    git_done=0
+    if [ -n "$(_git ls-remote "'${uri}'" "'${cset}'" 2>&1)" ]; then
+        printf "Doing shallow clone\n"
+        if _git clone ${verbose} "${@}" --depth 1 -b "'${cset}'" "'${uri}'" "'${git_cache}'"; then
+            git_done=1
+        else
+            printf "Shallow clone failed, falling back to doing a full clone\n"
+        fi
+    fi
+    if [ ${git_done} -eq 0 ]; then
+        printf "Doing full clone\n"
+        _git clone ${verbose} "${@}" "'${uri}'" "'${git_cache}'"
     fi
 fi
-if [ ${git_done} -eq 0 ]; then
-    printf "Doing full clone\n"
-    _git clone ${verbose} "${@}" "'${uri}'" "'${basename}'"
-fi
 
-pushd "${basename}" >/dev/null
+pushd "${git_cache}" >/dev/null
 
 # Try to get the special refs exposed by some forges (pull-requests for
 # github, changes for gerrit...). There is no easy way to know whether
@@ -86,20 +92,25 @@ if [ ${recurse} -eq 1 ]; then
     _git submodule update --init --recursive
 fi
 
-# We do not want the .git dir; we keep other .git files, in case they
-# are the only files in their directory.
+# Generate the archive, sort with the C locale so that it is reproducible
+# We do not want the .git dir; we keep other .git
+# files, in case they are the only files in their directory.
 # The .git dir would generate non reproducible tarballs as it depends on
 # the state of the remote server. It also would generate large tarballs
 # (gigabytes for some linux trees) when a full clone took place.
-rm -rf .git
+find . -not -type d \
+	-and -not -path "./.git/*" >"${BR2_DL_DIR}/${basename}.list"
+LC_ALL=C sort <"${BR2_DL_DIR}/${basename}.list" >"${BR2_DL_DIR}/${basename}.list.sorted"
 
-popd >/dev/null
-
-# Generate the archive, sort with the C locale so that it is reproducible
-find "${basename}" -not -type d >"${basename}.list"
-LC_ALL=C sort <"${basename}.list" >"${basename}.list.sorted"
 # Create GNU-format tarballs, since that's the format of the tarballs on
 # sources.buildroot.org and used in the *.hash files
-tar cf - --numeric-owner --owner=0 --group=0 --mtime="${date}" --format=gnu \
-         -T "${basename}.list.sorted" >"${output}.tar"
+tar cf - --transform="s/^\.$/${basename}/" \
+	--numeric-owner --owner=0 --group=0 --mtime="${date}" --format=gnu \
+         -T "${BR2_DL_DIR}/${basename}.list.sorted" >"${output}.tar"
 gzip -6 -n <"${output}.tar" >"${output}"
+tar tf "${output}"
+
+rm -f "${BR2_DL_DIR}/${basename}.list"
+rm -f "${BR2_DL_DIR}/${basename}.list.sorted"
+
+popd >/dev/null
