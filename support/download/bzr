@@ -20,6 +20,7 @@ verbose=
 while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     case "${OPT}" in
     q)  verbose=-q;;
+    f)  filename="${OPTARG}";;
     o)  output="${OPTARG}";;
     u)  uri="${OPTARG}";;
     c)  cset="${OPTARG}";;
@@ -55,4 +56,4 @@ fi
 
 _bzr export ${verbose} --root="'${basename}/'" --format=tgz \
     ${timestamp_opt} - "${@}" "'${uri}'" -r "'${cset}'" \
-    >"${output}"
+    >"${output}/${filename}"

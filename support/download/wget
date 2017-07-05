@@ -21,6 +21,7 @@ while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     q)  verbose=-q;;
     o)  output="${OPTARG}";;
     f)  filename="${OPTARG}";;
+    R)  remote_filename="${OPTARG}";;
     u)  url="${OPTARG}";;
     e)  encode="-e";;
     :)  printf "option '%s' expects a mandatory argument\n" "${OPTARG}"; exit 1;;
@@ -40,4 +41,4 @@ _wget() {
 # mirror
 [ -n "${encode}" ] && filename=${filename//\?/%3F}
 
-_wget ${verbose} "${@}" -O "'${output}'" "'${url}/${filename}'"
+_wget ${verbose} "${@}" -O "'${output}/${filename}'" "'${url}/${remote_filename}'"

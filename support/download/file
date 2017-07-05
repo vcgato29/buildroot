@@ -22,6 +22,7 @@ verbose=-v
 while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     case "${OPT}" in
     q)  verbose=;;
+    f)  filename="${OPTARG}";;
     o)  output="${OPTARG}";;
     u)  source="${OPTARG#*://}";;
     :)  printf "option '%s' expects a mandatory argument\n" "${OPTARG}"; exit 1;;
@@ -37,4 +38,4 @@ _localfiles() {
     eval ${LOCALFILES} "${@}"
 }
 
-_localfiles ${verbose} "${@}""'${source}'" "'${output}'"
+_localfiles ${verbose} "${@}""'${source}'" "'${output}/${filename}'"

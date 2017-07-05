@@ -22,6 +22,7 @@ while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     case "${OPT}" in
     q)  verbose=-q; exec >/dev/null;;
     r)  recurse=1;;
+    f)  filename="${OPTARG}";;
     o)  output="${OPTARG}";;
     u)  uri="${OPTARG}";;
     c)  cset="${OPTARG}";;
@@ -106,9 +107,9 @@ LC_ALL=C sort <"${BR2_DL_DIR}/${basename}.list" >"${BR2_DL_DIR}/${basename}.list
 # sources.buildroot.org and used in the *.hash files
 tar cf - --transform="s/^\.$/${basename}/" \
 	--numeric-owner --owner=0 --group=0 --mtime="${date}" --format=gnu \
-         -T "${BR2_DL_DIR}/${basename}.list.sorted" >"${output}.tar"
-gzip -6 -n <"${output}.tar" >"${output}"
-tar tf "${output}"
+         -T "${BR2_DL_DIR}/${basename}.list.sorted" >"${output}/${filename}.tar"
+gzip -n <"${output}/${filename}.tar" >"${output}/${filename}"
+tar tf "${output}/${filename}"
 
 rm -f "${BR2_DL_DIR}/${basename}.list"
 rm -f "${BR2_DL_DIR}/${basename}.list.sorted"

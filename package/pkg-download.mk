@@ -99,7 +99,7 @@ define DOWNLOAD
 		-H $(PKGDIR)/$($(PKG)_RAWNAME).hash \
 		-n $($(PKG)_RAW_BASE_NAME) \
 		-N $($(PKG)_RAWNAME) \
-		-o $($(PKG)_DL_DIR)/$(notdir $(1)) \
+		-o $($(PKG)_DL_DIR) \
 		$(if $($(PKG)_GIT_SUBMODULES),-r) \
 		$(DOWNLOAD_URIS) \
 		$(QUIET) \

@@ -19,6 +19,7 @@ verbose=
 while getopts "${BR_BACKEND_DL_GETOPTS}" OPT; do
     case "${OPT}" in
     q)  verbose=-q;;
+    f)  filename="${OPTARG}";;
     o)  output="${OPTARG}";;
     u)  uri="${OPTARG}";;
     c)  rev="${OPTARG}";;
@@ -38,4 +39,4 @@ _svn() {
 
 _svn export ${verbose} "${@}" "'${uri}@${rev}'" "'${basename}'"
 
-tar czf "${output}" "${basename}"
+tar czf "${output}/${filename}" "${basename}"

@@ -19,7 +19,7 @@
 # We want to catch any unexpected failure, and exit immediately.
 set -e
 
-export BR_BACKEND_DL_GETOPTS=":hc:o:n:N:H:ru:qf:e"
+export BR_BACKEND_DL_GETOPTS=":hc:o:n:N:H:ru:qf:eR:"
 
 main() {
     local OPT OPTARG
@@ -56,8 +56,8 @@ main() {
     # - matches all its hashes: do not download it again and exit promptly
     # - fails at least one of its hashes: force a re-download
     # - there's no hash (but a .hash file): consider it a hard error
-    if [ -e "${output}" ]; then
-        if support/download/check-hash ${quiet} "${hfile}" "${output}" "${output##*/}"; then
+    if [ -e "${output}/${filename}" ]; then
+        if support/download/check-hash ${quiet} "${hfile}" "${output}" "${filename}"; then
             exit 0
         elif [ ${?} -ne 2 ]; then
             # Do not remove the file, otherwise it might get re-downloaded
@@ -109,9 +109,10 @@ main() {
                 -c "${cset}" \
                 -n "${raw_base_name}" \
                 -N "${raw_name}" \
-                -f "${filename}" \
+                -f "$(basename ${tmpf})" \
+                -R "${filename}" \
                 -u "${uri}" \
-                -o "${tmpf}" \
+                -o "${tmpd}" \
                 ${quiet} ${recurse} "${@}"
         then
             rm -rf "${tmpd:?}/*"
@@ -125,7 +126,7 @@ main() {
 
         # Check if the downloaded file is sane, and matches the stored hashes
         # for that file
-        if ! support/download/check-hash ${quiet} "${hfile}" "${tmpf}" "${output##*/}"; then
+        if ! support/download/check-hash ${quiet} "${hfile}" "${tmpf}" "${filename}"; then
             rm -rf "${tmpd:?}/*"
             # cd back to keep path coherence
             cd "${OLDPWD}"
@@ -181,7 +182,7 @@ main() {
     # that 'mv' is atomic, because it then uses rename() that POSIX mandates
     # to be atomic, see:
     #   http://pubs.opengroup.org/onlinepubs/9699919799/functions/rename.html
-    if ! mv -f "${tmp_output}" "${output}"; then
+    if ! mv -f "${tmp_output}" "${output}/${filename}"; then
         rm -f "${tmp_output}"
         exit 1
     fi
